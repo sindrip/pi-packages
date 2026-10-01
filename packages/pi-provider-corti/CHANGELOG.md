@@ -1,5 +1,13 @@
 # @sindripetur/pi-provider-corti
 
+## 0.0.6
+
+### Patch Changes
+
+- 8c910c7: Import the OpenAI-completions API adapter via the native
+  `@earendil-works/pi-ai/api/openai-completions.lazy` export instead of the
+  temporary `@earendil-works/pi-ai/compat` surface, which will be removed.
+
 ## 0.0.5
 
 ### Patch Changes
