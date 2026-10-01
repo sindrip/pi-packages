@@ -8,10 +8,23 @@ import {
 	type ThinkingLevelMap,
 } from "@earendil-works/pi-ai";
 import { openAICompletionsApi } from "@earendil-works/pi-ai/api/openai-completions.lazy";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 
 const BASE_URL = "https://ai.eu.corti.app/v1";
 const PROVIDER_ID = "corti";
+
+/**
+ * Whether experimental/beta models are requested from Corti's /models
+ * endpoint. Toggled at runtime via the `/corti` command. In-memory only:
+ * resets each pi start, matching the `--experimental` runtime flag semantics.
+ */
+let experimentalEnabled = false;
+
+function buildModelsUrl(): string {
+	// @corti/cli sends this param to include beta models. Exact form may need
+	// adjusting to match the upstream endpoint (presence vs =true vs =1).
+	return experimentalEnabled ? `${BASE_URL}/models?experimental=true` : `${BASE_URL}/models`;
+}
 
 // =============================================================================
 // Catalog
@@ -100,7 +113,7 @@ async function fetchCatalog(
 	context: RefreshModelsContext,
 	key: string,
 ): Promise<readonly Model<"openai-completions">[]> {
-	const response = await fetch(`${BASE_URL}/models`, {
+	const response = await fetch(buildModelsUrl(), {
 		headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
 		signal: context.signal,
 	});
@@ -112,6 +125,33 @@ async function fetchCatalog(
 	const payload: { data?: CortiRemoteModel[] } = await response.json();
 
 	return mapRemoteModels(payload.data ?? []);
+}
+
+// =============================================================================
+// `/corti` command
+// =============================================================================
+
+async function cortiCommandHandler(args: string, ctx: ExtensionCommandContext): Promise<void> {
+	if (!ctx.hasUI) {
+		ctx.ui.notify("/corti requires interactive mode.", "warning");
+		return;
+	}
+
+	const experimentalLabel = `Toggle experimental models (currently ${experimentalEnabled ? "on" : "off"})`;
+	const refreshLabel = "Refresh model catalog";
+	const choice = await ctx.ui.select("Corti provider", [experimentalLabel, refreshLabel]);
+
+	if (choice === experimentalLabel) {
+		experimentalEnabled = !experimentalEnabled;
+		await ctx.modelRegistry.refresh({ providers: [PROVIDER_ID], force: true });
+		ctx.ui.notify(
+			`Corti experimental models ${experimentalEnabled ? "enabled" : "disabled"}.`,
+			"info",
+		);
+	} else if (choice === refreshLabel) {
+		await ctx.modelRegistry.refresh({ providers: [PROVIDER_ID], force: true });
+		ctx.ui.notify("Corti model catalog refreshed.", "info");
+	}
 }
 
 // =============================================================================
@@ -137,4 +177,9 @@ export default function (pi: ExtensionAPI): void {
 	});
 
 	pi.registerProvider(provider);
+
+	pi.registerCommand("corti", {
+		description: "Corti provider: toggle experimental models, refresh catalog",
+		handler: cortiCommandHandler,
+	});
 }
