@@ -3,10 +3,13 @@
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
+	"workspaces": [
+		"packages/*"
+	],
 	"scripts": {
-		"clean": "pnpm -r run clean",
-		"build": "pnpm -r run build",
-		"check": "pnpm -r run check && pnpm run lint && pnpm run format:check",
+		"clean": "npm run clean --workspaces --if-present",
+		"build": "npm run build --workspaces --if-present",
+		"check": "npm run check --workspaces --if-present && npm run lint && npm run format:check",
 		"lint": "oxlint",
 		"format": "oxfmt --write 'packages/**/*.ts' '*.ts'",
 		"format:check": "oxfmt --check 'packages/**/*.ts' '*.ts'",
@@ -14,9 +17,8 @@
 		"release": "changeset publish"
 	},
 	"devDependencies": {
-		"oxfmt": "catalog:",
-		"oxlint": "catalog:",
-		"@changesets/cli": "catalog:"
-	},
-	"packageManager": "pnpm@12.8.1"
+		"oxfmt": "^0.71.0",
+		"oxlint": "^1.86.0",
+		"@changesets/cli": "^3.0.3"
+	}
 }
