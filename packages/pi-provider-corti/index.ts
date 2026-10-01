@@ -13,27 +13,15 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-c
 const BASE_URL = "https://ai.eu.corti.app/v1";
 const PROVIDER_ID = "corti";
 
-/**
- * Whether experimental/beta models are requested from Corti's /models
- * endpoint. Toggled at runtime via the `/corti` command. In-memory only:
- * resets each pi start, matching the `--experimental` runtime flag semantics.
- */
 let experimentalEnabled = false;
 
 function buildModelsUrl(): string {
 	const url = new URL("/models", BASE_URL);
-	// @corti/cli sends this param to include alpha/beta models the server gates
-	// behind it (matching `npx @corti/cli --experimental`). No per-model marker is
-	// returned — the param decides what's in `data` — so the toggle re-fetches.
 	if (experimentalEnabled) {
 		url.searchParams.set("experimental", "true");
 	}
 	return url.toString();
 }
-
-// =============================================================================
-// Catalog
-// =============================================================================
 
 type CortiRemoteModel = {
 	id: string;
@@ -132,10 +120,6 @@ async function fetchCatalog(
 	return mapRemoteModels(payload.data ?? []);
 }
 
-// =============================================================================
-// `/corti` command
-// =============================================================================
-
 async function cortiCommandHandler(_args: string, ctx: ExtensionCommandContext): Promise<void> {
 	if (!ctx.hasUI) {
 		ctx.ui.notify("/corti requires interactive mode.", "warning");
@@ -153,10 +137,6 @@ async function cortiCommandHandler(_args: string, ctx: ExtensionCommandContext):
 		);
 	}
 }
-
-// =============================================================================
-// Extension entry point
-// =============================================================================
 
 export default function (pi: ExtensionAPI): void {
 	const provider: Provider<"openai-completions"> = createProvider<"openai-completions">({
@@ -179,7 +159,7 @@ export default function (pi: ExtensionAPI): void {
 	pi.registerProvider(provider);
 
 	pi.registerCommand("corti", {
-		description: "Corti provider: toggle experimental models, refresh catalog",
+		description: "Corti provider: toggle experimental models",
 		handler: cortiCommandHandler,
 	});
 }
