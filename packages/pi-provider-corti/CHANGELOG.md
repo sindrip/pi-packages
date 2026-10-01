@@ -1,5 +1,15 @@
 # @sindripetur/pi-provider-corti
 
+## 0.0.5
+
+### Patch Changes
+
+- 4ab8b8d: Use Corti's standard `CORTI_BEARER` credential path via pi-ai's
+  `envApiKeyAuth`, removing the hand-rolled pasteLogin/createAuth/check/resolve
+  auth glue. `/login corti` still works, and the `CORTI_BEARER` environment
+  variable now resolves without a stored credential, so users of
+  `npx @corti/cli models init` no longer need to authenticate twice.
+
 ## 0.0.4
 
 ### Patch Changes
