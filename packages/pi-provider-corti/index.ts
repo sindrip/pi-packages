@@ -114,7 +114,11 @@ async function fetchCatalog(
 
 	const payload: { data?: CortiRemoteModel[] } = await response.json();
 
-	return mapRemoteModels(payload.data ?? []);
+	if (!Array.isArray(payload.data)) {
+		throw new Error(`Corti /models returned malformed payload`);
+	}
+
+	return mapRemoteModels(payload.data);
 }
 
 // =============================================================================
