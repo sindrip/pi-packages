@@ -1,6 +1,6 @@
 {
 	"name": "@sindripetur/pi-provider-corti",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Corti provider extension for Pi: dynamic model discovery, OpenAI-compatible streaming, and credential storage via /login.",
 	"keywords": [
 		"pi-package"
