@@ -100,7 +100,10 @@ async function fetchCatalog(
 	context: RefreshModelsContext,
 	key: string,
 ): Promise<readonly Model<"openai-completions">[]> {
-	const response = await fetch(`${BASE_URL}/models`, {
+	const modelsUrl = new URL(`${BASE_URL}/models`);
+	modelsUrl.searchParams.set("experimental", "true");
+
+	const response = await fetch(modelsUrl, {
 		headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
 		signal: context.signal,
 	});
