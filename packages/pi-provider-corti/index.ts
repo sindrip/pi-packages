@@ -8,20 +8,14 @@ import {
 	type ThinkingLevelMap,
 } from "@earendil-works/pi-ai";
 import { openAICompletionsApi } from "@earendil-works/pi-ai/api/openai-completions.lazy";
-import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const BASE_URL = "https://ai.eu.corti.app/v1";
 const PROVIDER_ID = "corti";
 
-let experimentalEnabled = false;
-
-function buildModelsUrl(): string {
-	const url = new URL("/models", BASE_URL);
-	if (experimentalEnabled) {
-		url.searchParams.set("experimental", "true");
-	}
-	return url.toString();
-}
+// =============================================================================
+// Catalog
+// =============================================================================
 
 type CortiRemoteModel = {
 	id: string;
@@ -106,7 +100,7 @@ async function fetchCatalog(
 	context: RefreshModelsContext,
 	key: string,
 ): Promise<readonly Model<"openai-completions">[]> {
-	const response = await fetch(buildModelsUrl(), {
+	const response = await fetch(`${BASE_URL}/models`, {
 		headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
 		signal: context.signal,
 	});
@@ -120,23 +114,9 @@ async function fetchCatalog(
 	return mapRemoteModels(payload.data ?? []);
 }
 
-async function cortiCommandHandler(_args: string, ctx: ExtensionCommandContext): Promise<void> {
-	if (!ctx.hasUI) {
-		ctx.ui.notify("/corti requires interactive mode.", "warning");
-		return;
-	}
-
-	const toggleLabel = `Toggle experimental models (currently ${experimentalEnabled ? "on" : "off"})`;
-	const choice = await ctx.ui.select("Corti provider", [toggleLabel]);
-
-	if (choice === toggleLabel) {
-		experimentalEnabled = !experimentalEnabled;
-		ctx.ui.notify(
-			`Corti experimental models ${experimentalEnabled ? "enabled" : "disabled"} — open /models to refresh.`,
-			"info",
-		);
-	}
-}
+// =============================================================================
+// Extension entry point
+// =============================================================================
 
 export default function (pi: ExtensionAPI): void {
 	const provider: Provider<"openai-completions"> = createProvider<"openai-completions">({
@@ -157,9 +137,4 @@ export default function (pi: ExtensionAPI): void {
 	});
 
 	pi.registerProvider(provider);
-
-	pi.registerCommand("corti", {
-		description: "Corti provider: toggle experimental models",
-		handler: cortiCommandHandler,
-	});
 }
