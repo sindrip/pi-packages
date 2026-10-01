@@ -1,5 +1,11 @@
 # @sindripetur/pi-provider-corti
 
+## 0.0.4
+
+### Patch Changes
+
+- a5f972c: Release 0.0.4 to verify the npm-workspace publish pipeline end-to-end.
+
 ## 0.0.3
 
 ### Patch Changes
