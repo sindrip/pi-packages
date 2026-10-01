@@ -1,0 +1,37 @@
+{
+	"name": "@sindripetur/pi-provider-corti",
+	"version": "0.1.0",
+	"description": "Corti provider extension for Pi: dynamic model discovery, OpenAI-compatible streaming, and credential storage via /login.",
+	"keywords": [
+		"pi-package"
+	],
+	"files": [
+		"index.ts"
+	],
+	"type": "module",
+	"scripts": {
+		"clean": "rm -rf node_modules",
+		"build": "echo 'nothing to build (pi loads .ts via jiti)'",
+		"check": "tsc -p tsconfig.json --noEmit"
+	},
+	"devDependencies": {
+		"typescript": "^7.0.2"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-ai": "*",
+		"@earendil-works/pi-coding-agent": "*"
+	},
+	"pi": {
+		"extensions": [
+			"./index.ts"
+		]
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sindrip/pi-packages.git",
+		"directory": "packages/pi-provider-corti"
+	}
+}

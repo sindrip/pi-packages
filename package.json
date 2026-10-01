@@ -1,0 +1,24 @@
+{
+	"name": "pi-packages",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"clean": "npm run clean --workspaces --if-present",
+		"build": "npm run build --workspaces --if-present",
+		"check": "npm run check --workspaces --if-present && npm run lint && npm run format:check",
+		"lint": "oxlint",
+		"format": "oxfmt --write 'packages/**/*.ts' '*.ts'",
+		"format:check": "oxfmt --check 'packages/**/*.ts' '*.ts'",
+		"version": "changeset version",
+		"release": "changeset publish"
+	},
+	"devDependencies": {
+		"oxfmt": "^0.71.0",
+		"oxlint": "^1.86.0",
+		"@changesets/cli": "^3.0.3"
+	}
+}
