@@ -7,7 +7,7 @@ import {
 	type RefreshModelsContext,
 	type ThinkingLevelMap,
 } from "@earendil-works/pi-ai";
-import { openAICompletionsApi } from "@earendil-works/pi-ai/compat";
+import { openAICompletionsApi } from "@earendil-works/pi-ai/api/openai-completions.lazy";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const BASE_URL = "https://ai.eu.corti.app/v1";
