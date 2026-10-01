@@ -1,12 +1,9 @@
 import {
 	createProvider,
+	envApiKeyAuth,
 	type ApiKeyCredential,
-	type AuthCheck,
-	type AuthResult,
 	type Model,
 	type Provider,
-	type ProviderAuth,
-	type ProviderAuthInteraction,
 	type RefreshModelsContext,
 	type ThinkingLevelMap,
 } from "@earendil-works/pi-ai";
@@ -118,50 +115,6 @@ async function fetchCatalog(
 }
 
 // =============================================================================
-// Auth
-// =============================================================================
-
-async function pasteLogin(interaction: ProviderAuthInteraction): Promise<ApiKeyCredential> {
-	const key = await interaction.prompt({
-		type: "secret",
-		message: "Corti bearer token:",
-		placeholder: "base64-encoded token",
-	});
-
-	if (!key) {
-		throw new Error("No token entered.");
-	}
-
-	return { type: "api_key", key };
-}
-
-function createAuth(): ProviderAuth {
-	return {
-		apiKey: {
-			name: "Corti API key",
-			login: pasteLogin,
-			async check({ credential }): Promise<AuthCheck | undefined> {
-				if (!credential?.key) {
-					return undefined;
-				}
-
-				return { type: "api_key", source: "Corti (stored)" };
-			},
-			async resolve({ credential }): Promise<AuthResult | undefined> {
-				if (!credential?.key) {
-					return undefined;
-				}
-
-				return {
-					auth: { apiKey: credential.key, baseUrl: BASE_URL },
-					source: "Corti (stored)",
-				};
-			},
-		},
-	};
-}
-
-// =============================================================================
 // Extension entry point
 // =============================================================================
 
@@ -170,7 +123,7 @@ export default function (pi: ExtensionAPI): void {
 		id: PROVIDER_ID,
 		name: "Corti",
 		baseUrl: BASE_URL,
-		auth: createAuth(),
+		auth: { apiKey: envApiKeyAuth("Corti API key", ["CORTI_BEARER"]) },
 		models: [],
 		fetchModels: async (context) => {
 			const cred = context.credential as ApiKeyCredential | undefined;
