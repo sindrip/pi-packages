@@ -1,5 +1,11 @@
 # @sindripetur/pi-provider-corti
 
+## 0.0.3
+
+### Patch Changes
+
+- a97e715: Switch from pnpm workspace to npm workspaces; publish via `changeset publish` with npm provenance (no custom publish script).
+
 ## 0.0.2
 
 ### Patch Changes
