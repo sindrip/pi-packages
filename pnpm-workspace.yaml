@@ -1,0 +1,18 @@
+packages:
+  - "packages/*"
+
+catalog:
+  "@earendil-works/pi-coding-agent": "^0.99.2"
+  "@earendil-works/pi-ai": "^0.99.2"
+  "typescript": "^7.0.2"
+  "@types/node": "^22.10.0"
+  "oxlint": "^1.86.0"
+  "oxfmt": "^0.71.0"
+  "@changesets/cli": "^3.0.3"
+
+minimumReleaseAge: 0
+
+allowBuilds:
+  "@google/genai": false
+  esbuild: false
+  protobufjs: false

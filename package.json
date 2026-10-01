@@ -1,0 +1,22 @@
+{
+	"name": "pi-packages",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"clean": "pnpm -r run clean",
+		"build": "pnpm -r run build",
+		"check": "pnpm -r run check && pnpm run lint && pnpm run format:check",
+		"lint": "oxlint",
+		"format": "oxfmt --write 'packages/**/*.ts' '*.ts'",
+		"format:check": "oxfmt --check 'packages/**/*.ts' '*.ts'",
+		"version": "changeset version",
+		"release": "changeset publish"
+	},
+	"devDependencies": {
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"@changesets/cli": "catalog:"
+	},
+	"packageManager": "pnpm@12.8.1"
+}
