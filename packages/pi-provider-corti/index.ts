@@ -136,42 +136,20 @@ async function fetchCatalog(
 // `/corti` command
 // =============================================================================
 
-async function cortiCommandHandler(args: string, ctx: ExtensionCommandContext): Promise<void> {
+async function cortiCommandHandler(_args: string, ctx: ExtensionCommandContext): Promise<void> {
 	if (!ctx.hasUI) {
 		ctx.ui.notify("/corti requires interactive mode.", "warning");
 		return;
 	}
 
-	async function refreshCorti(): Promise<{ ok: boolean; message: string }> {
-		const result = await ctx.modelRegistry.refresh({ providers: [PROVIDER_ID], force: true });
-		if (result.aborted) {
-			return { ok: false, message: "Refresh aborted." };
-		}
-		const error = result.errors.get(PROVIDER_ID);
-		if (error) {
-			return { ok: false, message: `Refresh failed: ${error.message}` };
-		}
-		return { ok: true, message: "" };
-	}
+	const toggleLabel = `Toggle experimental models (currently ${experimentalEnabled ? "on" : "off"})`;
+	const choice = await ctx.ui.select("Corti provider", [toggleLabel]);
 
-	const experimentalLabel = `Toggle experimental models (currently ${experimentalEnabled ? "on" : "off"})`;
-	const refreshLabel = "Refresh model catalog";
-	const choice = await ctx.ui.select("Corti provider", [experimentalLabel, refreshLabel]);
-
-	if (choice === experimentalLabel) {
+	if (choice === toggleLabel) {
 		experimentalEnabled = !experimentalEnabled;
-		const result = await refreshCorti();
 		ctx.ui.notify(
-			result.ok
-				? `Corti experimental models ${experimentalEnabled ? "enabled" : "disabled"}.`
-				: `Corti experimental models ${experimentalEnabled ? "enabled" : "disabled"} — ${result.message}`,
-			result.ok ? "info" : "error",
-		);
-	} else if (choice === refreshLabel) {
-		const result = await refreshCorti();
-		ctx.ui.notify(
-			result.ok ? "Corti model catalog refreshed." : result.message,
-			result.ok ? "info" : "error",
+			`Corti experimental models ${experimentalEnabled ? "enabled" : "disabled"} — open /models to refresh.`,
+			"info",
 		);
 	}
 }
