@@ -21,9 +21,14 @@ const PROVIDER_ID = "corti";
 let experimentalEnabled = false;
 
 function buildModelsUrl(): string {
-	// @corti/cli sends this param to include beta models. Exact form may need
-	// adjusting to match the upstream endpoint (presence vs =true vs =1).
-	return experimentalEnabled ? `${BASE_URL}/models?experimental=true` : `${BASE_URL}/models`;
+	const url = new URL("/models", BASE_URL);
+	// @corti/cli sends this param to include alpha/beta models the server gates
+	// behind it (matching `npx @corti/cli --experimental`). No per-model marker is
+	// returned — the param decides what's in `data` — so the toggle re-fetches.
+	if (experimentalEnabled) {
+		url.searchParams.set("experimental", "true");
+	}
+	return url.toString();
 }
 
 // =============================================================================
@@ -137,20 +142,37 @@ async function cortiCommandHandler(args: string, ctx: ExtensionCommandContext): 
 		return;
 	}
 
+	async function refreshCorti(): Promise<{ ok: boolean; message: string }> {
+		const result = await ctx.modelRegistry.refresh({ providers: [PROVIDER_ID], force: true });
+		if (result.aborted) {
+			return { ok: false, message: "Refresh aborted." };
+		}
+		const error = result.errors.get(PROVIDER_ID);
+		if (error) {
+			return { ok: false, message: `Refresh failed: ${error.message}` };
+		}
+		return { ok: true, message: "" };
+	}
+
 	const experimentalLabel = `Toggle experimental models (currently ${experimentalEnabled ? "on" : "off"})`;
 	const refreshLabel = "Refresh model catalog";
 	const choice = await ctx.ui.select("Corti provider", [experimentalLabel, refreshLabel]);
 
 	if (choice === experimentalLabel) {
 		experimentalEnabled = !experimentalEnabled;
-		await ctx.modelRegistry.refresh({ providers: [PROVIDER_ID], force: true });
+		const result = await refreshCorti();
 		ctx.ui.notify(
-			`Corti experimental models ${experimentalEnabled ? "enabled" : "disabled"}.`,
-			"info",
+			result.ok
+				? `Corti experimental models ${experimentalEnabled ? "enabled" : "disabled"}.`
+				: `Corti experimental models ${experimentalEnabled ? "enabled" : "disabled"} — ${result.message}`,
+			result.ok ? "info" : "error",
 		);
 	} else if (choice === refreshLabel) {
-		await ctx.modelRegistry.refresh({ providers: [PROVIDER_ID], force: true });
-		ctx.ui.notify("Corti model catalog refreshed.", "info");
+		const result = await refreshCorti();
+		ctx.ui.notify(
+			result.ok ? "Corti model catalog refreshed." : result.message,
+			result.ok ? "info" : "error",
+		);
 	}
 }
 
